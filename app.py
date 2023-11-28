@@ -11,6 +11,8 @@ from langchain.document_loaders import PyPDFLoader
 import fitz
 from PIL import Image
 
+import json
+
 import chromadb
 import re
 import uuid 
@@ -146,6 +148,11 @@ with gr.Blocks() as demo:
             outputs=[show_img]
     )
 
+
+secretsFile = open('secrets.json')
+secrets = json.load(secretsFile)
+secretsFile.close()
+app.OPENAI_API_KEY = secrets["openaiKey"]
     
 demo.queue()
 demo.launch()  
