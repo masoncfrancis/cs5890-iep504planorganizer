@@ -96,30 +96,13 @@ app = my_app()
 with gr.Blocks() as demo:
     with gr.Column():
         with gr.Row():
-            with gr.Column(scale=0.8):
-                api_key = gr.Textbox(placeholder='Enter OpenAI API key', show_label=False, interactive=True).style(container=False)
-            with gr.Column(scale=0.2):
-                change_api_key = gr.Button('Change Key')
-        with gr.Row():
-            accommodations_text = gr.Textbox(value="", placeholder="Accommodations will be displayed here")
+            accommodations_text = gr.Textbox(label="Accomodations", value="", placeholder="Accommodations will be displayed here")
             show_img = gr.Image(label='Upload PDF', tool='select').style(height=680)
     with gr.Row():
-        with gr.Column(scale=0.60):
+        with gr.Column():
             submit_btn = gr.Button('Get Accommodations')
-        with gr.Column(scale=0.20):
+        with gr.Column():
             btn = gr.UploadButton("📁 upload a PDF", file_types=[".pdf"]).style()
-
-    api_key.submit(
-        fn=set_apikey,
-        inputs=[api_key]
-    )
-
-
-
-    change_api_key.click(
-        fn=enable_api_box,
-        outputs=[api_key]
-    )
 
     btn.upload(
         fn=render_first,
