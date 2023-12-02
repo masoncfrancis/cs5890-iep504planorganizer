@@ -13,15 +13,6 @@ import uuid
 
 import json
 
-enable_box = gr.Textbox.update(value=None, placeholder='Upload your OpenAI API key', interactive=True)
-disable_box = gr.Textbox.update(value='OpenAI API key is Set', interactive=False)
-
-def set_apikey(api_key: str):
-    app.OPENAI_API_KEY = api_key
-    return disable_box
-
-def enable_api_box():
-    return enable_box
 
 class my_app:
     def __init__(self, OPENAI_API_KEY: str = None) -> None:
@@ -31,9 +22,8 @@ class my_app:
         self.count: int = 0
 
     def __call__(self, file: str) -> Any:
-        if self.count == 0:
-            self.chain = self.build_chain(file)
-            self.count += 1
+        self.chain = None
+        self.chain = self.build_chain(file)
         return self.chain
 
     def chroma_client(self):
@@ -59,7 +49,7 @@ class my_app:
         chain = ConversationalRetrievalChain.from_llm(
             ChatOpenAI(temperature=0.0, openai_api_key=self.OPENAI_API_KEY),
             retriever=pdfsearch.as_retriever(search_kwargs={"k": 1}),
-            return_source_documents=True, )
+            return_source_documents=True)
         return chain
 
 
@@ -67,9 +57,9 @@ def get_accommodations(file):
     if not file:
         raise gr.Error(message='Upload a PDF')
     chain = app(file)
-
-    result = chain({"question": "Please list all accomodations this person receives in detail. If this is not an IEP or 504 plan, say 'this is not an IEP or 504 plan'", "chat_history": []}, return_only_outputs=True)
-    accommodations = result.get("answer", "No accommodations found.")
+    file = None
+    result = chain({"question": "Please give the person's name and a detailed list of all accomodations this person is to receive. Make sure to specify any special factors, assistive technologies, course subjects that accomodations apply to, and any other accomodation-related information. If this is not an IEP or 504 plan, say 'this is not an IEP or 504 plan'", "chat_history": []}, return_only_outputs=True)
+    accommodations = result.get("answer", "There was an error")
     return accommodations
 
 
@@ -88,7 +78,7 @@ def render_first(file):
     # Render the page as a PNG image with a resolution of 300 DPI
     pix = page.get_pixmap(matrix=fitz.Matrix(300/72, 300/72))
     image = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
-    return image, []
+    return image, ""
 
 
 app = my_app()
@@ -113,7 +103,8 @@ with gr.Blocks() as demo:
     submit_btn.click(
         fn=get_accommodations,
         inputs=[btn],
-        outputs=[accommodations_text]
+        outputs=accommodations_text,
+
     )
 
 
