@@ -9,9 +9,10 @@ import fitz
 from PIL import Image
 import chromadb
 import re
-import uuid
-
+import os
 import json
+from openai import OpenAI
+import pandas as pd
 
 
 class my_app:
@@ -19,7 +20,7 @@ class my_app:
         self.OPENAI_API_KEY: str = OPENAI_API_KEY
         self.chain = None
         self.N: int = 0
-        self.count: int = 0
+
 
     def __call__(self, file: str) -> Any:
         self.chain = None
@@ -57,9 +58,9 @@ def get_accommodations(file):
     if not file:
         raise gr.Error(message='Upload a PDF')
     chain = app(file)
-    file = None
-    result = chain({"question": "Please give the person's name and a detailed list of all accomodations this person is to receive. Make sure to specify any special factors, assistive technologies, course subjects that accomodations apply to, and any other accomodation-related information. If this is not an IEP or 504 plan, say 'this is not an IEP or 504 plan'", "chat_history": []}, return_only_outputs=True)
+    result = chain({"question": "Please give the person's name and a detailed list of all accomodations this person is to receive. Make sure to specify any special factors, assistive technologies, course subjects that accomodations apply to, and any other accomodation-related information", "chat_history": []}, return_only_outputs=True)
     accommodations = result.get("answer", "There was an error")
+    answers[file.name] = accommodations
     return accommodations
 
 
@@ -71,7 +72,6 @@ def render_file(file):
     image = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
     return image
 
-
 def render_first(file):
     doc = fitz.open(file.name)
     page = doc[0]
@@ -80,8 +80,42 @@ def render_first(file):
     image = Image.frombytes('RGB', [pix.width, pix.height], pix.samples)
     return image, ""
 
+def get_summary():
+    global answers
+    answer_text_all = ""
+    for answer in answers.values():
+        answer_text_all = answer_text_all + answer + "\n\n"
+    client = OpenAI()
+
+    response = client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=[
+            {"role": "system", "content": "Organize and output all following input as CSV, one person per line"},
+            {"role": "user", "content": answer_text_all}
+        ]
+    )
+    csv_output = response.choices[0].message.content
+    write_csv_file('output.csv', csv_output)
+    print("done")
+
+def is_valid_csv(csv_string):
+    try:
+       df = pd.read_csv(csv_string)
+       return True
+    except Exception as e:
+        return False
+
+
+def write_csv_file(filepath, file_contents):
+    if (True):
+        file = open(filepath, "w")
+        file.write(file_contents)
+        file.close()
+    return filepath
+
 
 app = my_app()
+answers = dict()
 
 with gr.Blocks() as demo:
     with gr.Column():
@@ -93,6 +127,9 @@ with gr.Blocks() as demo:
             submit_btn = gr.Button('Get Accommodations')
         with gr.Column():
             btn = gr.UploadButton("📁 upload a PDF", file_types=[".pdf"]).style()
+    with gr.Row():
+        get_summary_btn = gr.Button('Generate Summary')
+    
 
     btn.upload(
         fn=render_first,
@@ -103,8 +140,14 @@ with gr.Blocks() as demo:
     submit_btn.click(
         fn=get_accommodations,
         inputs=[btn],
-        outputs=accommodations_text,
+        outputs=[accommodations_text],
 
+    )
+
+    get_summary_btn.click(
+        fn=get_summary,
+        inputs=None,
+        outputs=None
     )
 
 
@@ -112,6 +155,7 @@ secretsFile = open('secrets.json')
 secrets = json.load(secretsFile)
 secretsFile.close()
 app.OPENAI_API_KEY = secrets["openaiKey"]
+os.environ["OPENAI_API_KEY"] = secrets["openaiKey"]
     
 demo.queue()
 demo.launch()  
