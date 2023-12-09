@@ -3,6 +3,7 @@ is available at [https://github.com/sunilkumardash9/Pdf-GPT/tree/060b487324cef85
 
 License terms of the open source software included are as follows:
 
+```
 MIT License
 
 Copyright (c) 2023 Sunil Kumar Dash
@@ -24,3 +25,4 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+```
