@@ -32,7 +32,7 @@ Save your API key in `secrets.json`. When finished, the file contents should loo
 }
 ```
 
-**Note: Please be aware that the use of this software may incur charges through your it's use of the OpenAI API.**
+**Note: Please be aware that by using this software you may incur charges through it's use of the OpenAI API.**
 
 ### Run The Server
 
