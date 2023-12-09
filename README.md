@@ -42,7 +42,7 @@ Run the main server by running this command:
 python3 app.py
 ```
 
-The script should output a localhost URL where you can use the software. 
+The script should output a localhost URL where you can access the web interface. 
 
 
 ## Credit
@@ -56,4 +56,5 @@ to integrate GPT-4 into this project.
 
 ## Licensing
 
-This software is not available for commercial or non-commercial use by any individual or organization. 
+This software is only to be used for demonstration and evaluation purposes using falsified data. It may not be used 
+in any non-commercial or commercial environment by any individual or organization.
